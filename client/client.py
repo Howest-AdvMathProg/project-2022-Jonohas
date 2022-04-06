@@ -1,6 +1,7 @@
 import logging
 import socket
 from typing import final
+from message import Message
 
 
 logging.basicConfig(level=logging.INFO)
@@ -22,16 +23,24 @@ while True:
         received_command = input('Command ( data or CLOSE ): ')
 
         while received_command != "CLOSE":
-            snelheid = input("Send to server, snelheid: ")
-            reactietijd = input("Send to server, reactietijd: ")
-            type_wegdek = input("Send to server, type wegdek: ")
 
-            message = f"data:{snelheid};{reactietijd};{type_wegdek}"
+            params = {
+                'name': 'Jonas'
+            }
+
+            message = Message('GET', '/api/v1', params)
+            print(message)
             io_stream_server.write(f"{message}\n")
             io_stream_server.flush()
             received_command = input('Command ( data or CLOSE ): ')
+
+        params = {
+            
+        }
+
+        message = Message('CLOSE', '/', params)
         
-        io_stream_server.write(f"{received_command}\n")
+        io_stream_server.write(f"{message}\n")
         io_stream_server.flush()
         socket_to_server.close()
         break

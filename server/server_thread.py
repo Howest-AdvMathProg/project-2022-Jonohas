@@ -1,5 +1,6 @@
 import logging
 import threading
+import socket
 
 from client_handler import ClientHandler
 
@@ -16,14 +17,18 @@ class Server(threading.Thread):
 
         # queue up to 5 requests
         self.socket.listen(20)
+        self._running = True
 
 
     def send_message(self, message):
         self.message_queue.put(f"{self.name}: {message}")
 
+    def close(self):
+        print(threading.active_count)
+        self._running = False
+
     def run(self):
-        while True:
-            self.send_message(f"Server starting...")
+        while self._running == True:
             conn, addr = self.socket.accept()
             self.send_message(f"Client connected: {addr}")
             clh = ClientHandler(conn, self.message_queue)
