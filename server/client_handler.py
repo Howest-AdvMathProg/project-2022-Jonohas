@@ -20,6 +20,7 @@ class ClientHandler(Thread):
         while message.verb != "CLOSE":
             self.send_message(f"Message received: {message.verb} requested data: {message.endpoint}, request params: {message.params}")
 
+            io_stream_client.write(f"{message}\n")
             io_stream_client.flush()
             received_message = io_stream_client.readline().rstrip('\n')
             message = MessageHandler(received_message)

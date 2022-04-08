@@ -24,6 +24,7 @@ class Window(Frame):
         self.init_message_queue()
 
         self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue)
+        self._running = True
 
         
 
@@ -55,14 +56,12 @@ class Window(Frame):
 
 
     def write_to_text_area(self):
-        while True:
+        while self._running:
             if self.message_queue.not_empty:
                 self.text['state'] = 'normal'
                 self.text.insert(END, f"{self.message_queue.get()}\n")
                 self.text['state'] = 'disabled'
 
-    def signal_handler(self, signum, frame):
-        self.server.exit_event.set()
 
     def start_server(self):
         self.message_queue.put(f"Starting server...")
@@ -71,12 +70,11 @@ class Window(Frame):
         self.start_stop.grid_forget()
         self.stop_start.grid(row=2)
 
-        self.server.join()
-
     def stop_server(self):
         self.message_queue.put(f"Closing server...")
         self.server.close()
-        
+        self._running = False
+        self.master.quit()
         
 
     def init_message_queue(self):
@@ -88,5 +86,4 @@ class Window(Frame):
 root = Tk()
 root.geometry("500x300")
 app = Window(root)
-signal.signal(signal.SIGINT, app.signal_handler)
 root.mainloop()

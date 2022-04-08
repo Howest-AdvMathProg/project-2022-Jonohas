@@ -2,6 +2,7 @@ import logging
 import socket
 from typing import final
 from message import Message
+from message_handler import MessageHandler
 
 
 logging.basicConfig(level=logging.INFO)
@@ -29,9 +30,12 @@ while True:
             }
 
             message = Message('GET', '/api/v1', params)
-            print(message)
+            
             io_stream_server.write(f"{message}\n")
             io_stream_server.flush()
+            received_message = io_stream_server.readline().rstrip('\n')
+            m = MessageHandler(received_message)
+            print(m)
             received_command = input('Command ( data or CLOSE ): ')
 
         params = {

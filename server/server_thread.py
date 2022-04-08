@@ -15,7 +15,7 @@ class Server(threading.Thread):
         # bind to the port
         self.socket.bind((self.host, self.port))
 
-        # queue up to 5 requests
+        # queue up to 20 requests
         self.socket.listen(20)
         self._running = True
 
@@ -26,10 +26,22 @@ class Server(threading.Thread):
     def close(self):
         print(threading.active_count)
         self._running = False
+        socket.socket(socket.AF_INET, 
+            socket.SOCK_STREAM).connect( (self.host, self.port))
+        self.socket.close()
 
     def run(self):
         while self._running == True:
-            conn, addr = self.socket.accept()
-            self.send_message(f"Client connected: {addr}")
-            clh = ClientHandler(conn, self.message_queue)
-            clh.start()
+            try:
+                conn, addr = self.socket.accept()
+                self.send_message(f"Client connected: {addr}")
+                clh = ClientHandler(conn, self.message_queue)
+                clh.start()
+
+            except KeyboardInterrupt:
+                print("Caught keyboard interrupt, exiting")
+                break
+
+            if self._running == False:
+                break
+
