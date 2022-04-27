@@ -16,9 +16,8 @@ class Server(threading.Thread):
         self.socket.bind((self.host, self.port))
 
         # queue up to 20 requests
-        self.socket.listen(20)
+        self.socket.listen(2)
         self._running = True
-
 
     def send_message(self, message):
         self.message_queue.put(f"{self.name}: {message}")
@@ -39,6 +38,7 @@ class Server(threading.Thread):
                 clh.start()
 
             except KeyboardInterrupt:
+                self.close()
                 print("Caught keyboard interrupt, exiting")
                 break
 
