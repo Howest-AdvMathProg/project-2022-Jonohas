@@ -2,10 +2,16 @@ import json
 
 class RequestMessage():
     def __init__(self, jsonString):
-        data = json.loads(jsonString)
-        self.verb = data['verb']
-        self.endpoint = data['endpoint']
-        self.params = data['params']
+
+        try:
+            data = json.loads(jsonString)
+            self.verb = data['verb']
+            self.endpoint = data['endpoint']
+            self.params = data['params']
+        except Exception:
+            print("string is not a valid json string")
+            self.verb = "CLOSE"
+
 
     def __str__(self):
         return json.dumps(self.__dict__(), separators=(',', ':'))

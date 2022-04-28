@@ -3,6 +3,7 @@ import threading
 import socket
 
 from client_handler import ClientHandler
+from client_manager import ClientManager
 
 class Server(threading.Thread):
     def __init__(self, host, port, socket, message_queue):
@@ -16,8 +17,10 @@ class Server(threading.Thread):
         self.socket.bind((self.host, self.port))
 
         # queue up to 20 requests
-        self.socket.listen(2)
+        self.socket.listen(20)
         self._running = True
+
+        self.client_manager = ClientManager()
 
     def send_message(self, message):
         self.message_queue.put(f"{self.name}: {message}")
@@ -27,6 +30,9 @@ class Server(threading.Thread):
         self._running = False
         socket.socket(socket.AF_INET, 
             socket.SOCK_STREAM).connect( (self.host, self.port))
+
+        for client in self.client_manager.clients:
+            client.close()
         self.socket.close()
 
     def run(self):
@@ -34,8 +40,7 @@ class Server(threading.Thread):
             try:
                 conn, addr = self.socket.accept()
                 self.send_message(f"Client connected: {addr}")
-                clh = ClientHandler(conn, self.message_queue)
-                clh.start()
+                self.client_manager.add_client(conn, self.message_queue)
 
             except KeyboardInterrupt:
                 self.close()

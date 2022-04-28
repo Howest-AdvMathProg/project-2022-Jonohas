@@ -1,51 +1,46 @@
 from threading import Thread
 import logging
 from request_message import RequestMessage
-from MessageHandlers.data import Data
-from MessageHandlers.login import Login
+from MessageHandlers.message import Message
+
+
 
 class ClientHandler(Thread):
     def __init__(self, conn, message_queue):
         Thread.__init__(self)
         self.conn = conn
+        self.io = self.conn.makefile(mode='rw')
         self.message_queue = message_queue
         self.name = "UnidentifiedUser-Thread"
 
         self.logged_in = False
 
         self.username = ""
-        self.fullnane = ""
+        self.fullname = ""
         self.email = ""
+
+    def __iter__(self):
+        return self
+
+    def send_to_client(self, string):
+        self.io.write(f"{string}\n")
+        self.io.flush()
+
+    def receieve_message_client(self):
+        value = self.io.readline().rstrip('\n')
+        self.io.flush()
+        return value
 
     def send_message(self, message):
         self.message_queue.put(f"{self.name}: {message}")
 
-    def run(self):
-        self.send_message(f"Starting...")
-
-        io_stream_client = self.conn.makefile(mode='rw')
-        received_message = io_stream_client.readline().rstrip('\n')
-        message = RequestMessage(received_message)
-        while message.verb != "CLOSE":
-
-            # Handle the login function
-            if message.verb == "POST" and message.endpoint == "/api/v1/login":
-                login = Login(self.message_queue, io_stream_client, message)
-                if (login.valid == True):
-                    self.logged_in = not self.logged_in
-                    self.name = f"{login.username}-Thread"
-                    self.username = login.username
-                    self.email = login.email
-                    self.fullname = login.fullname
-                login.send_to_client(login.response)
-            
-            # Handle all other queries
-            if (message.verb == "GET" and self.logged_in == True):
-                data = Data(message_queue=self.message_queue, io_stream_client=io_stream_client, message=message)
-                data.send_to_client(data.response)
-
-            received_message = io_stream_client.readline().rstrip('\n')
-            message = RequestMessage(received_message)
-
-        self.send_message(f"Finished...")
-        self.conn.close()
+    def run(self):       
+        t = Thread(target=self.start_message_thread)
+        t.start()
+    
+    def start_message_thread(self):
+        while True:
+            received_message = self.receieve_message_client()
+            message = Message(received_message, self)
+            mThread = Thread(target=message.run)
+            mThread.start()
