@@ -12,6 +12,7 @@ class Movie:
         self.genre = genre
         self.poster_url = poster_url
 
+
     def __dict__(self):
         return { 
             "releaseDate": self.release_date, 
@@ -24,3 +25,6 @@ class Movie:
             "genre": self.genre,
             "posterUrl": self.poster_url
         }
+
+    def __repr__(self):
+        return repr((self.release_date, self.title, self.overview, self.popularity, self.vote_count, self.vote_average, self.original_language, self.genre, self.poster_url))

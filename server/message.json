@@ -1,7 +1,0 @@
-{
-    "verb": "GET",
-    "endpoint": "/api/v1",
-    "params": {
-        "name": "Jonas"
-    }
-}

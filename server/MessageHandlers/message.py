@@ -1,4 +1,5 @@
 import json
+import jsonpickle
 from response_message import ResponseMessage
 from eventhandler import EventHandler
 from data.repositories.movie_repository import MovieRepository
@@ -7,7 +8,7 @@ class Message:
 
     def __init__(self, jsonString, client):
         self.client = client
-        self.client.send_message(f"Starting...")
+        self.json_string = jsonString
 
         self.response = ResponseMessage()
         
@@ -19,20 +20,18 @@ class Message:
         self.event_handler.link(self._on_message, 'MESSAGE')
         self.event_handler.link(self._on_close, 'CLOSE')
 
-        if jsonString != "":
-            try:
-                data = json.loads(jsonString)
-                self.verb = data['verb']
-                self.params = data['params']
-            except Exception:
-                self.verb = "ERROR"
+        try:
+            data = jsonpickle.decode(jsonString)
+            self.verb = data['verb']
+            self.params = data['params']
+        except Exception:
+            self.verb = "ERROR"
 
 
-            
-
-
+        
     def run(self):
-        self.event_handler.fire(self.verb)
+        if self.json_string != "":
+            self.event_handler.fire(self.verb)
         
 
 
@@ -53,27 +52,31 @@ class Message:
             self.response_code = 401
             self.verb = "RESPONSE"
 
-        print(self.response)
         self.client.send_to_client(self.response)
 
     def _on_get(self):
         movie_repository = MovieRepository()
+        search_movies = movie_repository.search_by_field(self.params["field"], self.params["value"], self.params["exact"], self.params["sortBy"], self.params["descending"])
+        self.client.send_message(f"User requested some data {self.params}")
         self.response_code = 200
         self.verb = "RESPONSE"
         self.body = {
-            "movies": movie_repository.movie_list
+            "movies": search_movies
         }
+
         self.client.send_to_client(self.response)
 
 
     def _on_error(self):
-        print("error")
+        pass
 
     def _on_message(self):
-        print("message")
+        pass
 
     def _on_close(self):
         self.client.send_message(f"Finished...")
+        self.client.message_queue_running = False
+        self.client.io.close()
         self.client.conn.close()
 
     def valid_login(self):
@@ -116,7 +119,7 @@ class Message:
         self.response.verb = verb
 
     def __str__(self):
-        return json.dumps(self.__dict__(), separators=(',', ':'))
+        return jsonpickle.encode(self.__dict__(), max_depth=10)
 
     def __dict__(self):
         return { 'verb': self.verb, 'params': self.params}

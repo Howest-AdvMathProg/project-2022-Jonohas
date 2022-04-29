@@ -25,7 +25,7 @@ class Main(Frame):
         self.status_screen = Status(self.app, self)
         self.log_screen = Log(self.app, self)
         self.init_message_queue()
-        self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue)
+        
 
         self.init_window()
 
@@ -47,7 +47,7 @@ class Main(Frame):
         self.app.pack(expand=1, fill="both")
 
     def start_server(self):
-        self.add_message_queue(f"Starting server...")
+        self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue)
         self.server.start()
 
         t = Thread(target=self.status_screen.handle_connected_clients)
@@ -55,6 +55,7 @@ class Main(Frame):
 
     def stop_server(self):
         self.add_message_queue(f"Closing server...")
+        self.server.socket.shutdown(socket.SHUT_RDWR)
         self.server.close()
         self._running = False
 
@@ -63,7 +64,7 @@ class Main(Frame):
         t = Thread(target=self.log_screen.write_to_text_area)
         t.start()
 
-    def add_message_queue(self, message):
+    def send_message(self, message):
         self.message_queue.put(message)
 
 

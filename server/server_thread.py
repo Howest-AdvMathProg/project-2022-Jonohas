@@ -13,8 +13,13 @@ class Server(threading.Thread):
         self.socket = socket
         self.name = "Server-Thread"
         self.message_queue = message_queue
+
+        try:
         # bind to the port
-        self.socket.bind((self.host, self.port))
+            self.socket.bind((self.host, self.port))
+            self.send_message(f"Starting server...")
+        except Exception as e:
+            self.send_message("Failed to bind to port")
 
         # queue up to 20 requests
         self.socket.listen(20)
