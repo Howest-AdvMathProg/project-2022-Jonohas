@@ -2,3 +2,5 @@ client-env/
 __pycache__/
 
 .vscode/
+movie_image_*.png
+movie_image_*
