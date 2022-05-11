@@ -1,2 +1,8 @@
-./server/server-venv/
-./client/client-venv/
+./server/server-env/
+./client/client-env/
+
+./server/.vscode/
+./server/__pycache__/
+
+./client/.vscode/
+./client/__pycache__/
