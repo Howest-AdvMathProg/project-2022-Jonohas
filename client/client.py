@@ -1,5 +1,6 @@
 import logging
 import socket
+from client.server_communication import ServerCommunication
 
 
 from message_handlers.request_message import RequestMessage
@@ -19,12 +20,19 @@ class Client:
         self.port = 9999
 
         self.io = None
+        self.ser_com = None
+
 
     def connect(self):
         self.client_to_server.connect((self.host, self.port))
         self.io = self.client_to_server.makefile(mode='rw')
+        self.ser_com = ServerCommunication(self.io) 
+
+
+     
 
     def send(self, string):
+        self.ser_com.send
         try:
             self.io.write(f"{string}\n")
             self.io.flush()
