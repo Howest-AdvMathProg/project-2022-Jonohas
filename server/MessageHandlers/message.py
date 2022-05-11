@@ -37,7 +37,6 @@ class Message:
         
     def run(self):
         if self.json_string != "":
-            print('any message')
             self.event_handler.fire(self.verb)
 
     def _on_login(self):
@@ -51,11 +50,11 @@ class Message:
             self.client.fullname = login["fullname"]
 
             self.response_code = 200
-            self.verb = "RESPONSE"
+            self.verb = "LOGIN_RESPONSE"
 
         else:
             self.response_code = 401
-            self.verb = "RESPONSE"
+            self.verb = "LOGIN_RESPONSE"
 
         self.client.send_to_client(self.response)
 

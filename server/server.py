@@ -52,7 +52,7 @@ class Main(Frame):
 
     def start_server(self):
         serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue)
+        self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue, self.history_queue)
         self.server.start()
 
         t = Thread(target=self.status_screen.handle_connected_clients)

@@ -103,28 +103,28 @@ class Main(Frame):
         }
         message = RequestMessage('LOGIN', params)
         self.client.send(message)
-        received_message = self.client.receive()
-        m = ResponseMessage(received_message, self)
-        if m.response_code == 200:
-            self.logged_in = True
-            self.top.destroy()
-
-
-            params = {
-                "field": "title",
-                "value": "Spider-Man",
-                "exact": False,
-                "sortBy": "releaseDate",
-                "descending": False
-            }
-            self.movie_frame.get_movies(params)
 
         self.start_message_listener()
         self.start_heartbeat()
 
-    def _on_response(self, responseMessage):
-        pass
-        #print(responseMessage)
+    def _on_login(self, responseMessage):
+        m = responseMessage
+        if m.verb == "LOGIN_RESPONSE":
+            print(responseMessage)
+            if m.response_code == 200:
+                self.logged_in = True
+                self.top.destroy()
+
+
+                params = {
+                    "field": "title",
+                    "value": "Spider-Man",
+                    "exact": False,
+                    "sortBy": "releaseDate",
+                    "descending": False
+                }
+                print("requesting data")
+                self.movie_frame.get_movies(params)
 
     def start_message_listener(self):
         listenerThread = Thread(target=self._handle_incoming_message)

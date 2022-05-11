@@ -24,8 +24,6 @@ class Client:
         self.client_to_server.connect((self.host, self.port))
         self.io = self.client_to_server.makefile(mode='rw')
 
-       
-
     def send(self, string):
         try:
             self.io.write(f"{string}\n")
