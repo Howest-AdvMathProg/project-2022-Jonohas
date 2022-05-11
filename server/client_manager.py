@@ -13,6 +13,10 @@ class ClientManager():
         self._clients.append(clh)
         clh.start()
 
+    def close_clients(self):
+        for client in self._clients:
+            client.close()
+
 
     @property
     def clients(self):

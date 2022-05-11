@@ -6,9 +6,9 @@
 - [X] View important activity in logwindow
 - [X] Overwiew of logged-in clients
 - [X] Request data about client
-- [ ] Overview of the client's search history
-- [ ] Send message to client(s)
-  - [ ] Specific client
+- [X] Overview of the client's search history
+- [X] Send message to client(s)
+  - [X] Specific client
   - [X] Broadcast
 - [ ] View popularity of search
 - [X] Closing server
@@ -19,9 +19,9 @@
 - [X] View results
   - [X] View?
   - [ ] Clean?
-- [ ] View messages from server
+- [X] View messages from server
   - [X] Receive
-  - [ ] Display in GUI
+  - [X] Display in GUI
 
 ### At least 5 Searches
 - [ ] At least 3 with parameters:

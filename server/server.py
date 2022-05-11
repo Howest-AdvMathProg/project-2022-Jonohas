@@ -5,6 +5,7 @@ from tkinter import *
 from tkinter.ttk import Notebook
 from queue import Queue
 from threading import Thread
+from Frames.popular_search_frame import PopularSearch
 from server_thread import Server
 import socket
 import time
@@ -13,7 +14,7 @@ from Frames.log_frame import Log
 from Frames.status_frame import Status
 
 logging.info("Creating serversocket...")
-serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 
 
 class Main(Frame):
@@ -22,20 +23,22 @@ class Main(Frame):
         self._running = True
         self.app = Notebook(self)
 
+        self.history_queue = Queue()
+
         self.status_screen = Status(self.app, self)
         self.log_screen = Log(self.app, self)
+        self.popular_search_screen = PopularSearch(self.app, self)
+
         self.init_message_queue()
-        
-
         self.init_window()
-
+        
 
     def init_window(self):
         self.master.title("Movies - Moderator")
         self.pack(expand=1, fill="both")
 
         self.menubar = Menu(self.master)  
-        self.server_tab = Menu(self.menubar, tearoff=1)   
+        self.server_tab = Menu(self.menubar, tearoff=0)   
         self.server_tab.add_command(label="Start server", command=self.start_server)  
         self.server_tab.add_command(label="Stop server", command=self.stop_server)  
         self.menubar.add_cascade(label="Server", menu=self.server_tab) 
@@ -44,9 +47,11 @@ class Main(Frame):
 
         self.app.add(self.log_screen, text="Log")
         self.app.add(self.status_screen, text="Status")
+        self.app.add(self.popular_search_screen, text="Popular searches")
         self.app.pack(expand=1, fill="both")
 
     def start_server(self):
+        serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue)
         self.server.start()
 
@@ -54,10 +59,10 @@ class Main(Frame):
         t.start()
 
     def stop_server(self):
-        self.add_message_queue(f"Closing server...")
-        self.server.socket.shutdown(socket.SHUT_RDWR)
-        self.server.close()
-        self._running = False
+        try:
+            self.server.close()
+        except Exception as e:
+            print(e)
 
     def init_message_queue(self):
         self.message_queue = Queue()
@@ -67,12 +72,20 @@ class Main(Frame):
     def send_message(self, message):
         self.message_queue.put(message)
 
-
+    def on_closing(self):
+        self._running = False
+        self.stop_server()
+        self.destroy()
 
 
 root = Tk()
 root.geometry("600x400")
 
 app = Main(root)
+root.protocol("WM_DELETE_WINDOW", app.on_closing)
 
-root.mainloop()
+
+try:
+    root.mainloop()
+except KeyboardInterrupt:
+    app.on_closing()

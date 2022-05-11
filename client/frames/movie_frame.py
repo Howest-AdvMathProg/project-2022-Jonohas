@@ -79,11 +79,9 @@ class MovieFrame(Frame):
         Thread(target=getImageFromURL, args=(m["posterUrl"], self, f'''movie_image_{m["title"]}_{m["releaseDate"]}.png''')).start()
 
     def get_movies(self, params):
-
+        params['endpoint'] = "/movies"
         message = RequestMessage('GET', params)
         self.main.client.send(message)
-        received_message = self.main.client.receive()
-        m = ResponseMessage(received_message, self)
         
     def _on_response(self, responseMessage):
 

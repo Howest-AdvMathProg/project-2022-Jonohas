@@ -27,8 +27,11 @@ class Client:
        
 
     def send(self, string):
-        self.io.write(f"{string}\n")
-        self.io.flush()
+        try:
+            self.io.write(f"{string}\n")
+            self.io.flush()
+        except Exception:
+            pass
 
     def receive(self):
         return self.io.readline().rstrip('\n')
@@ -36,14 +39,6 @@ class Client:
     def disconnect(self):
         message = RequestMessage('CLOSE', {})
         self.send(message)
-        self.io.flush()
-        self.io.close()
         self.client_to_server.close()
 
-
-# thread for receiving message from server
-# thread for handling heartbeat
-
-
-    #print (message.decode('ascii'))
 

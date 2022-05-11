@@ -13,6 +13,7 @@ class Server(threading.Thread):
         self.socket = socket
         self.name = "Server-Thread"
         self.message_queue = message_queue
+        self.send_message(f"Server initilized")
 
         try:
         # bind to the port
@@ -31,20 +32,20 @@ class Server(threading.Thread):
         self.message_queue.put(f"{self.name}: {message}")
 
     def close(self):
-        print(threading.active_count)
+        self.send_message("Closing...")
         self._running = False
         socket.socket(socket.AF_INET, 
             socket.SOCK_STREAM).connect( (self.host, self.port))
 
-        for client in self.client_manager.clients:
-            client.close()
+        self.client_manager.close_clients()
         self.socket.close()
 
     def run(self):
         while self._running == True:
             try:
                 conn, addr = self.socket.accept()
-                self.send_message(f"Client connected: {addr}")
+                if self._running:
+                    self.send_message(f"Client connected: {addr}")
                 self.client_manager.add_client(conn, self.message_queue)
 
             except KeyboardInterrupt:
@@ -52,6 +53,4 @@ class Server(threading.Thread):
                 print("Caught keyboard interrupt, exiting")
                 break
 
-            if self._running == False:
-                break
 
