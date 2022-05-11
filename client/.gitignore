@@ -1,2 +1,4 @@
-client-venv/
+client-env/
 __pycache__/
+
+.vscode/
