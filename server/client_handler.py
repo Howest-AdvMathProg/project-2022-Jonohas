@@ -1,7 +1,6 @@
 from threading import Thread
 import logging
-from request_message import RequestMessage
-from MessageHandlers.message import Message
+from client_communication import ClientCommunication
 import socket
 
 
@@ -23,7 +22,11 @@ class ClientHandler(Thread):
         self.username = ""
         self.fullname = ""
         self.email = ""
+
         self.search_history = []
+
+        self.client_comm = ClientCommunication(self.io, self)
+        self.client_comm.start()
 
     def __iter__(self):
         return self
@@ -46,32 +49,23 @@ class ClientHandler(Thread):
     def send_message(self, message):
         self.message_queue.put(f"{self.name}: {message}")
 
-    def send_to_client(self, string):
-        self.io.write(f"{string}\n")
-        self.io.flush()
-
-    def receieve_message_client(self):
-        if self.is_socket_closed():
-            self._running = False
-
-        try:
-            value = self.io.readline().rstrip('\n')
-            return value
-        except Exception:
-            self._running = False
+    def send(self, string):
+        self.client_comm.send(string)
 
     def close(self):
         self._running = False
+        self.client_comm.close()
         self.conn.close()
 
 
     def run(self):       
         while self._running:
-            received_message = self.receieve_message_client()
-            message = Message(received_message, self, self.history_queue)
-            self.search_history.append(message)
-            mThread = Thread(target=message.run)
-            mThread.start()
+            pass
+
+            # message = Message(received_message, self, self.history_queue)
+            # self.search_history.append(message)
+            # mThread = Thread(target=message.run)
+            # mThread.start()
         self.send_message("I'm closing!")
         
 

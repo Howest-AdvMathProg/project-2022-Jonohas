@@ -5,7 +5,6 @@ from tkinter import *
 from tkinter.ttk import Notebook
 from queue import Queue
 from threading import Thread
-from Frames.popular_search_frame import PopularSearch
 from server_thread import Server
 import socket
 import time
@@ -27,7 +26,6 @@ class Main(Frame):
 
         self.status_screen = Status(self.app, self)
         self.log_screen = Log(self.app, self)
-        self.popular_search_screen = PopularSearch(self.app, self)
 
         self.init_message_queue()
         self.init_window()
@@ -47,7 +45,6 @@ class Main(Frame):
 
         self.app.add(self.log_screen, text="Log")
         self.app.add(self.status_screen, text="Status")
-        self.app.add(self.popular_search_screen, text="Popular searches")
         self.app.pack(expand=1, fill="both")
 
     def start_server(self):

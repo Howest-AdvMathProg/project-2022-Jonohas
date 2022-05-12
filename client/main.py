@@ -3,16 +3,13 @@ from datetime import datetime
 from threading import Thread
 from tkinter import *
 from tkinter.ttk import Notebook
+from classes.request import Request
 
 from frames.movie_frame import MovieFrame
 from frames.messages_frame import MessageFrame
 from client import Client
 
-from message_handlers.response_message import ResponseMessage
-from message_handlers.request_message import RequestMessage
-
 import time
-
 
 class Main(Frame):
     def __init__(self, master=None):
@@ -20,7 +17,7 @@ class Main(Frame):
         self.master = master
         self.message_listener = True
 
-        self.client = Client()
+        self.client = Client(self)
         
         self.username = ""
         self.fullname = ""
@@ -101,39 +98,10 @@ class Main(Frame):
             "fullname": self.fullname,
             "email": self.email
         }
-        message = RequestMessage('LOGIN', params)
+        message = Request('public/login', params)
         self.client.send(message)
 
-        self.start_message_listener()
         self.start_heartbeat()
-
-    def _on_login(self, responseMessage):
-        m = responseMessage
-        if m.verb == "LOGIN_RESPONSE":
-            print(responseMessage)
-            if m.response_code == 200:
-                self.logged_in = True
-                self.top.destroy()
-
-
-                params = {
-                    "field": "title",
-                    "value": "Spider-Man",
-                    "exact": False,
-                    "sortBy": "releaseDate",
-                    "descending": False
-                }
-                print("requesting data")
-                self.movie_frame.get_movies(params)
-
-    def start_message_listener(self):
-        listenerThread = Thread(target=self._handle_incoming_message)
-        listenerThread.start()
-
-    def _handle_incoming_message(self):
-        while self.message_listener:
-            received_message = self.client.receive()
-            m = ResponseMessage(received_message, self)
 
     def start_heartbeat(self):
         heartbeatThread = Thread(target=self._heartbeat)
@@ -152,9 +120,7 @@ class Main(Frame):
             else:
                 self.server_online = True 
 
-            
-            params = {}
-            message = RequestMessage('HEARTBEAT', params)
+            message = Request('public/heartbeat', {})
             self.client.send(message)
             time.sleep(2)
 

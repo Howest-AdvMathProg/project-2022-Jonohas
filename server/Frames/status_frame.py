@@ -2,7 +2,10 @@ from tkinter import *
 from tkinter import ttk
 import time
 
-from response_message import ResponseMessage
+from classes.response import Response
+from classes.request import Request
+
+import uuid
 
 
 class Status(Frame):
@@ -37,15 +40,15 @@ class Status(Frame):
 
         self.user_search_table = ttk.Treeview(self)
 
-        self.user_search_table['columns'] = ('Verb', 'Params')
+        self.user_search_table['columns'] = ('Method', 'Params')
 
 
         self.user_search_table.column("#0", width=0,  stretch=NO)
-        self.user_search_table.column("Verb",anchor=W, width=80)
+        self.user_search_table.column("Method",anchor=W, width=80)
         self.user_search_table.column("Params",anchor=W,width=80)
 
         self.user_search_table.heading("#0",text="",anchor=W)
-        self.user_search_table.heading("Verb",text="Verb",anchor=W)
+        self.user_search_table.heading("Method",text="Method",anchor=W)
         self.user_search_table.heading("Params",text="Params",anchor=W)
 
         self.user_search_table.grid(row=3, column=0, rowspan=3,columnspan=6, sticky=E+W+N+S)
@@ -65,25 +68,17 @@ class Status(Frame):
 
     def send_broadcast(self):
         message_string = self.entry_send_broadcast.get()
-        m = ResponseMessage()
-        m.verb = "MESSAGE"
-        m.body = {
-            "sender": "Server",
-            "message": message_string
-        }
+        m = Response(uuid.uuid4().hex, 200, 'public/message', {'sender': 'Server', 'message': message_string})
+
         for client in self.clients:
-            client.send_to_client(m)
+            client.send(m)
 
         
     def send_single_client(self):
         message_string = self.entry_send_broadcast.get()
-        m = ResponseMessage()
-        m.verb = "MESSAGE"
-        m.body = {
-            "sender": "Server",
-            "message": message_string
-        }
-        self.selected_client.send_to_client(m)
+        m = Response(uuid.uuid4().hex, 200, 'public/message', {'sender': 'Server', 'message': message_string})
+
+        self.selected_client.send(m)
 
     def on_clients_list_select(self, event):
 
@@ -91,13 +86,11 @@ class Status(Frame):
         try: 
             c = [client for client in self.clients if client.username == i[0]]
             self.selected_client = c[0]
-
             self.user_search_table.delete(*self.user_search_table.get_children())
             search_history = list(reversed(self.selected_client.search_history))
             for message in search_history:
-                print(message.json_string)
-                self.user_search_table.insert(parent='',index='end',iid=f"{message.request_verb}_{message.params}",text='',
-                    values=(message.request_verb,message.params))
+                self.user_search_table.insert(parent='',index='end',iid=f"{message._method}_{message._params}_{message._id}",text='',
+                    values=(message._method,message._params))
 
         except Exception as e:
             pass
