@@ -19,12 +19,13 @@ class PublicData:
     def __init__(self, response, main):
         self._main = main
         self._response = response
-        self.event_handler = EventHandler('get-movies', 'login', 'heartbeat', 'message')
+        self.event_handler = EventHandler('get-movies', 'login', 'heartbeat', 'message', 'get-movie-frequency')
 
         self.event_handler.link(self._get_movies, 'get-movies')
         self.event_handler.link(self._login, 'login')
         self.event_handler.link(self._heartbeat, 'heartbeat')
         self.event_handler.link(self._message, 'message')
+        self.event_handler.link(self._graph, 'get-movie-frequency')
 
         
         method = self._response._method.split('/')[1]
@@ -58,6 +59,9 @@ class PublicData:
         sender = self._response._result['sender']
         message = self._response._result['message']
         self._main.messages_frame.write_to_text_area(f"{sender}: {message}")
+
+    def _graph(self):
+        self._main.fill_graph(self._response)
         
 
 class ResponseHandler:

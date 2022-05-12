@@ -1,6 +1,11 @@
 import pandas as pd
 
 from data.models.movie import Movie
+import seaborn as sns
+import matplotlib.pyplot as plt
+import base64
+
+from multiprocessing import Process, Pipe
 
 
 def sort_title(value):
@@ -27,9 +32,10 @@ def sort_original_language(value):
 
 class MovieRepository:
     def __init__(self):
-        df = pd.read_csv("mymoviedb.csv", lineterminator='\n')
-        self.movie_list = [(Movie(row["Release_Date"], row["Title"], row["Overview"], row["Popularity"], row["Vote_Count"], row["Vote_Average"], row["Original_Language"], row["Genre"], row["Poster_Url"]).__dict__()) for index, row in df.iterrows()]
-        df = None
+        self.df = pd.read_csv("mymoviedb.csv", lineterminator='\n')
+        self.movie_list = [(Movie(row["Release_Date"], row["Title"], row["Overview"], row["Popularity"], row["Vote_Count"], row["Vote_Average"], row["Original_Language"], row["Genre"], row["Poster_Url"]).__dict__()) for index, row in self.df.iterrows()]
+
+        self.graph = ""
 
     # field name, value of the search, is it an exact search true or false, sort by field name, ascending true or fasle
     def search_by_field(self, field, value, exact, sortBy, descending):
@@ -43,5 +49,24 @@ class MovieRepository:
 
         search_values.sort(key=lambda f: f[sortBy], reverse=descending)
         return search_values
+
+    def create_frequency_graph(self):
+        parent_conn, child_conn = Pipe()
+        p = Process(target=self.get_graph, args=(child_conn,))
+        p.start()
+
+        self.graph = parent_conn.recv()
+        p.join()
+
+        return self.graph
+        
+
+
+    def get_graph(self, conn):
+        graph = sns.histplot(data = self.df, x='Release_Date', stat='count')
+        plt.savefig('frequency_graph.png')
+        self.graph = open("frequency_graph.png","rb").read()
+        conn.send(self.graph)
+        
 
     

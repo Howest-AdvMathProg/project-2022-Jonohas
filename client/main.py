@@ -9,6 +9,11 @@ from frames.movie_frame import MovieFrame
 from frames.messages_frame import MessageFrame
 from client import Client
 
+from PIL import ImageTk, Image  
+
+
+import base64
+
 import time
 
 class Main(Frame):
@@ -50,8 +55,14 @@ class Main(Frame):
 
         self.menubar = Menu(self.master)  
         self.server_tab = Menu(self.menubar, tearoff=0)
+        self.graph_tab = Menu(self.menubar, tearoff=0)
+
         self.server_tab.add_command(label="Disconnect", command=self.client.disconnect)
         self.menubar.add_cascade(label="Server", menu=self.server_tab) 
+
+        self.graph_tab.add_command(label="Movie frequency", command=self.graph_movie_frequency)
+        self.menubar.add_cascade(label="Graph", menu=self.graph_tab) 
+
 
         self.master.config(menu=self.menubar) 
 
@@ -85,6 +96,32 @@ class Main(Frame):
 
         Grid.columnconfigure(self, 0, weight=1)
         Grid.rowconfigure(self, 7, weight=1)
+
+
+    def graph_movie_frequency(self):
+        
+        self.graph = Toplevel(self)
+        self.graph.geometry()
+        self.graph.title('Graph - Client')
+
+        self.graph.resizable(True, True)
+        message = Request('public/get-movie-frequency', {})
+        self.client.send(message)
+
+    def fill_graph(self, response):
+        graphString = response._result['graph']
+        g = open("out_graph.jpg", "wb")
+        g.write(graphString)
+        g.close()
+
+        image1 = Image.open("out_graph.jpg")
+        image1.show()
+        test = ImageTk.PhotoImage(image1)
+        label1 = Label(
+            self.graph,
+            image=test
+        )
+        label1.grid(sticky=N+S+E+W)
 
 
     def login(self):
@@ -132,7 +169,7 @@ class Main(Frame):
 
 
 root = Tk()
-root.geometry("900x500")
+root.geometry("1200x700")
 app = Main(root)
 root.protocol("WM_DELETE_WINDOW", app.close)
 

@@ -21,13 +21,13 @@ class PublicData:
     def __init__(self, request, client):
         self.client = client
         self._request = request
-        self.event_handler = EventHandler('get-movies', 'login', 'heartbeat', 'close', 'graph')
+        self.event_handler = EventHandler('get-movies', 'login', 'heartbeat', 'close', 'get-movie-frequency')
 
         self.event_handler.link(self._get_movies, 'get-movies')
         self.event_handler.link(self._login, 'login')
         self.event_handler.link(self._heartbeat, 'heartbeat')
         self.event_handler.link(self._close, 'close')
-        self.event_handler.link(self._graph, 'graph')
+        self.event_handler.link(self._graph, 'get-movie-frequency')
 
         method = self._request._method.split('/')[1]
         self.event_handler.fire(method)
@@ -46,7 +46,9 @@ class PublicData:
         self.client.email = self._request._params['email']
         self.client.name = f"{self.client.username}-Thread"
         self.client.logged_in = True
+
         self.client.search_history.append(self._request)
+        self.client.main.status_screen.add_connected_client()
 
 
     def _heartbeat(self):
@@ -56,7 +58,9 @@ class PublicData:
         self.client.close()
 
     def _graph(self):
-        pass
+        mr = MovieRepository()
+        self.client.send(Response(self._request._id, 200, self._request._method, { 'graph': mr.create_frequency_graph() }))
+        self.client.search_history.append(self._request)
 
 class RequestHandler:
     def __init__(self, json_string, client):
@@ -76,7 +80,10 @@ class RequestHandler:
         
 
     def from_string(self, string):
-        return jsonpickle.decode(string)
+        try:
+            return jsonpickle.decode(string)
+        except Exception:
+            pass
     
 
 class ClientCommunication(Thread):

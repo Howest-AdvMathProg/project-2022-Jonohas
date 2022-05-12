@@ -6,7 +6,7 @@ from client_handler import ClientHandler
 from client_manager import ClientManager
 
 class Server(threading.Thread):
-    def __init__(self, host, port, socket, message_queue, history_queue):
+    def __init__(self, host, port, socket, message_queue, history_queue, main):
         threading.Thread.__init__(self)
         self.host = host
         self.port = port
@@ -15,6 +15,8 @@ class Server(threading.Thread):
         self.message_queue = message_queue
         self.history_queue = history_queue
         self.send_message(f"Server initilized")
+
+        self.main = main
 
         try:
         # bind to the port
@@ -27,7 +29,7 @@ class Server(threading.Thread):
         self.socket.listen(20)
         self._running = True
 
-        self.client_manager = ClientManager(history_queue)
+        self.client_manager = ClientManager(history_queue, self.main)
 
     def send_message(self, message):
         self.message_queue.put(f"{self.name}: {message}")

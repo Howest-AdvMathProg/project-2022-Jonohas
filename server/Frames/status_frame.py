@@ -100,17 +100,15 @@ class Status(Frame):
         self.main.send_message(f"StatusFrame: {message}")
 
 
-    def handle_connected_clients(self):
-        while self.main.server._running:
-            try:
-                clients = self.main.server.client_manager.clients
-                self.clients = []
-                self.user_table.delete(*self.user_table.get_children())
-                for client in clients:
-                    if client.is_alive() and client.logged_in:
-                        self.clients.append(client)
-                        self.user_table.insert(parent='',index='end',iid=f"{client.username}",text='',
-                            values=(client.username,client.fullname,client.email))
-            except Exception:
-                print("Some error occured while adding clients to list")
-            time.sleep(1)
+    def add_connected_client(self):
+        try:
+            clients = self.main.server.client_manager.clients
+            self.clients = []
+            self.user_table.delete(*self.user_table.get_children())
+            for client in clients:
+                if client.is_alive() and client.logged_in:
+                    self.clients.append(client)
+                    self.user_table.insert(parent='',index='end',iid=f"{client.username}",text='',
+                        values=(client.username,client.fullname,client.email))
+        except Exception as e:
+            print(e)

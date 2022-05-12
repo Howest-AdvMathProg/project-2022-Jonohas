@@ -49,11 +49,9 @@ class Main(Frame):
 
     def start_server(self):
         serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue, self.history_queue)
+        self.server = Server(socket.gethostname(), 9999, serversocket, self.message_queue, self.history_queue, self)
         self.server.start()
 
-        t = Thread(target=self.status_screen.handle_connected_clients)
-        t.start()
 
     def stop_server(self):
         try:
@@ -75,14 +73,17 @@ class Main(Frame):
         self.destroy()
 
 
-root = Tk()
-root.geometry("600x400")
 
-app = Main(root)
-root.protocol("WM_DELETE_WINDOW", app.on_closing)
+if __name__ == '__main__':
+
+    root = Tk()
+    root.geometry("600x400")
+
+    app = Main(root)
+    root.protocol("WM_DELETE_WINDOW", app.on_closing)
 
 
-try:
-    root.mainloop()
-except KeyboardInterrupt:
-    app.on_closing()
+    try:
+        root.mainloop()
+    except KeyboardInterrupt:
+        app.on_closing()

@@ -6,8 +6,9 @@ import socket
 
 
 class ClientHandler(Thread):
-    def __init__(self, conn, message_queue, history_queue):
+    def __init__(self, conn, message_queue, history_queue, main):
         Thread.__init__(self)
+        self.main = main
         self.conn = conn
         self.io = self.conn.makefile(mode='rw')
         self.message_queue = message_queue
