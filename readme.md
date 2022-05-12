@@ -31,3 +31,7 @@
   
 - [ ] At least 1 to request graph
 - [ ] At least 1 with statistical data
+
+#### Todo
+- [ ] Create graph and send as base64 string
+- [ ] Add movie data to movie screen
